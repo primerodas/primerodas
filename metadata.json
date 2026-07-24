@@ -1,0 +1,6 @@
+{
+  "name": "Prime Rodas",
+  "description": "Landing page oficial da Prime Rodas em Natal/RN - Rodas, Pneus e Centro Automotivo Premium.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

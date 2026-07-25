@@ -79,9 +79,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenTerms }) =>
             </h4>
             <ul className="space-y-2.5 text-xs text-gray-400">
               <li><a href="https://instagram.com/primerodasrn" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a></li>
-              <li><a href="https://facebook.com/primerodasrn" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a></li>
               <li><a href="https://youtube.com/@primerodasrn" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">YouTube</a></li>
-              <li><a href="#contato" className="hover:text-white transition-colors">WhatsApp Direct</a></li>
             </ul>
           </div>
 

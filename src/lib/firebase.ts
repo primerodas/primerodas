@@ -16,6 +16,53 @@ export interface SiteConfigDoc {
   units?: any[] | null;
 }
 
+export function hashPasswordClient(pwd: string): string {
+  let hash = 0;
+  for (let i = 0; i < pwd.length; i++) {
+    const char = pwd.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0;
+  }
+  return 'ph_' + Math.abs(hash).toString(36) + '_' + pwd.length;
+}
+
+export async function ensureDefaultMasterInFirebase(): Promise<void> {
+  try {
+    const snap = await getDoc(SITE_CONFIG_DOC);
+    if (!snap.exists() || !snap.data()?.masterUser) {
+      await setDoc(
+        SITE_CONFIG_DOC,
+        {
+          masterUser: {
+            username: 'admin',
+            passwordHash: hashPasswordClient('admin@123'),
+          },
+        },
+        { merge: true }
+      );
+    }
+  } catch (e) {
+    console.warn('Firebase default master check:', e);
+  }
+}
+
+export async function saveMasterUserToFirebase(username: string, passwordHash: string): Promise<void> {
+  try {
+    await setDoc(
+      SITE_CONFIG_DOC,
+      {
+        masterUser: {
+          username: username.trim(),
+          passwordHash,
+        },
+      },
+      { merge: true }
+    );
+  } catch (e) {
+    console.error('Firebase save master user error:', e);
+  }
+}
+
 export async function fetchSiteConfigFromFirebase(): Promise<SiteConfigDoc | null> {
   try {
     const snap = await getDoc(SITE_CONFIG_DOC);

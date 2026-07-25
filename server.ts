@@ -41,13 +41,23 @@ function loadStore(): SiteStoreData {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const content = fs.readFileSync(DATA_FILE, 'utf-8');
-      return JSON.parse(content);
+      const store = JSON.parse(content);
+      if (!store.masterUser) {
+        store.masterUser = {
+          username: 'admin',
+          passwordHash: hashPassword('admin@123'),
+        };
+      }
+      return store;
     }
   } catch (e) {
     console.error('Error loading site store:', e);
   }
   return {
-    masterUser: null,
+    masterUser: {
+      username: 'admin',
+      passwordHash: hashPassword('admin@123'),
+    },
     assets: {},
     units: null,
   };
@@ -63,6 +73,7 @@ function saveStore(data: SiteStoreData) {
 
 // Global server state
 let currentStore = loadStore();
+saveStore(currentStore);
 
 // --- API ROUTES ---
 

@@ -6,6 +6,7 @@ import {
   updateSiteAssetInFirebase,
   resetSiteAssetInFirebase,
   resetAllSiteAssetsInFirebase,
+  ensureDefaultMasterInFirebase,
 } from '../lib/firebase';
 
 export type AssetKey =
@@ -128,6 +129,8 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Subscribe to real-time Firestore updates & fetch initial data from server
   useEffect(() => {
+    ensureDefaultMasterInFirebase();
+
     // 1. Subscribe to Firestore database for real-time changes across all browsers
     const unsubscribe = subscribeToSiteConfig((data) => {
       if (data.assets) {

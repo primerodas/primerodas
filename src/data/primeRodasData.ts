@@ -28,7 +28,7 @@ export const INITIAL_UNITS: UnitInfo[] = [
     phone: "(84) 98793-6367",
     whatsapp: "5584987936367",
     openingHours: "Segunda a Sexta: 08h às 17h30 | Sábado: 08h às 12h",
-    mapsUrl: "https://maps.google.com/?q=Av.+D%C3%A3o+Silveira,+4000,+Candel%C3%A1ria,+Natal",
+    mapsUrl: "https://share.google/iTcrWvW35kOPz3piC",
     consultantName: "Akson",
     consultantTitle: "Loja da Zona Sul",
     consultantImage: consultantAksonImg,

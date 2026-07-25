@@ -22,7 +22,11 @@ export const BeforeAfterSection: React.FC = () => {
   );
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+    handleMove(e.touches[0].clientX);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
     handleMove(e.touches[0].clientX);
   };
 
@@ -32,11 +36,11 @@ export const BeforeAfterSection: React.FC = () => {
   };
 
   return (
-    <section className="relative py-24 bg-[#050505] overflow-hidden">
+    <section className="relative py-16 sm:py-24 bg-[#050505] overflow-hidden">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-16">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-[#E30613] tracking-widest uppercase mb-4">
             <BrandAsterisk size={12} />
             <span>RESULTADOS REAIS</span>
@@ -46,7 +50,7 @@ export const BeforeAfterSection: React.FC = () => {
             Veja a transformação.
           </h2>
 
-          <p className="text-base text-gray-300 font-normal">
+          <p className="text-sm sm:text-base text-gray-300 font-normal">
             Arraste o controle e confira o resultado de uma roda revitalizada.
           </p>
         </div>
@@ -64,39 +68,45 @@ export const BeforeAfterSection: React.FC = () => {
 
           <div
             ref={containerRef}
-            onMouseDown={() => setIsDragging(true)}
+            onMouseDown={(e) => {
+              setIsDragging(true);
+              handleMove(e.clientX);
+            }}
             onMouseUp={() => setIsDragging(false)}
             onMouseLeave={() => setIsDragging(false)}
             onMouseMove={handleMouseMove}
-            onTouchStart={() => setIsDragging(true)}
+            onTouchStart={handleTouchStart}
             onTouchEnd={() => setIsDragging(false)}
             onTouchMove={handleTouchMove}
-            className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden border border-white/15 shadow-2xl select-none cursor-ew-resize bg-[#151515]"
+            className="relative w-full aspect-[4/3] sm:aspect-[16/9] rounded-3xl overflow-hidden border border-white/15 shadow-2xl select-none cursor-ew-resize bg-[#151515] touch-none"
           >
             {/* After Image (Full Base) */}
             <img
               src={ASSETS.afterWheel}
               alt="Roda Restaurada - Depois"
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
-            <div className="absolute top-4 right-4 bg-[#151515]/80 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full text-xs font-bold text-white tracking-wider z-10">
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-[#151515]/90 border border-white/10 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-wider z-10">
               DEPOIS (Restauração)
             </div>
 
-            {/* Before Image (Clipped Layer) */}
+            {/* Before Image (Clipped Layer via clip-path for zero distortion) */}
             <div
-              className="absolute inset-y-0 left-0 overflow-hidden"
-              style={{ width: `${sliderPos}%` }}
+              className="absolute inset-0 overflow-hidden"
+              style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
             >
               <img
                 src={ASSETS.beforeWheel}
                 alt="Roda Danificada - Antes"
-                className="absolute inset-0 max-w-none h-full object-cover"
-                style={{ width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '100%' }}
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#E30613] tracking-wider z-10">
+              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-black/90 border border-white/10 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-[#E30613] tracking-wider z-10">
                 ANTES (Danificada)
               </div>
             </div>

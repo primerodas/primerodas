@@ -65,6 +65,8 @@ export const About: React.FC = () => {
                 <img
                   src={ASSETS.metallicWheel}
                   alt="Acabamento metálico em rodas de liga leve"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover object-center filter brightness-95 group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                 />

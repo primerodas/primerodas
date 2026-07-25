@@ -118,7 +118,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
                 <img
                   src={ASSETS.storefront}
                   alt="Fachada e Loja Prime Rodas"
-                  className="w-full h-[360px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
+                  decoding="async"
+                  className="w-full h-[280px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />

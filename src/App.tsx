@@ -26,7 +26,7 @@ import { AdminAuthModal } from './components/AdminAuthModal';
 import { AdminImageTerminalModal } from './components/AdminImageTerminalModal';
 
 function MainApp() {
-  const [units, setUnits] = useState<UnitInfo[]>(INITIAL_UNITS);
+  const [localUnits, setLocalUnits] = useState<UnitInfo[]>(INITIAL_UNITS);
   const [legalType, setLegalType] = useState<'privacy' | 'terms' | null>(null);
   
   // Modals state
@@ -36,7 +36,9 @@ function MainApp() {
   const [prefilledService, setPrefilledService] = useState('Recuperação de rodas');
   const [prefilledUnitId, setPrefilledUnitId] = useState('mor-gouveia');
 
-  const { isLoggedIn } = useSiteAssets();
+  const { isLoggedIn, serverUnits } = useSiteAssets();
+
+  const units = serverUnits && serverUnits.length > 0 ? serverUnits : localUnits;
 
   const handleOpenAdminFlow = () => {
     if (isLoggedIn) {
@@ -155,7 +157,7 @@ function MainApp() {
         isOpen={isTerminalModalOpen}
         onClose={() => setIsTerminalModalOpen(false)}
         units={units}
-        onSaveUnits={(updated) => setUnits(updated)}
+        onSaveUnits={(updated) => setLocalUnits(updated)}
       />
 
       {/* Privacy Policy / Terms Modal */}

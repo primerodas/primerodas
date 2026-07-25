@@ -28,7 +28,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError('');
 
@@ -45,15 +45,15 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
       return;
     }
 
-    const ok = registerMasterUser(regUsername, regPassword);
+    const ok = await registerMasterUser(regUsername, regPassword);
     if (ok) {
       onSuccessLogin();
     } else {
-      setRegError('Erro ao cadastrar usuário master no dispositivo.');
+      setRegError('Erro ao cadastrar usuário master no servidor.');
     }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
 
@@ -62,7 +62,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
       return;
     }
 
-    const success = loginAdmin(loginUsername, loginPassword);
+    const success = await loginAdmin(loginUsername, loginPassword);
     if (success) {
       onSuccessLogin();
     } else {

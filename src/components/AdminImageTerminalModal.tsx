@@ -38,6 +38,7 @@ export const AdminImageTerminalModal: React.FC<AdminImageTerminalModalProps> = (
     masterUsername,
     logoutAdmin,
     changePassword,
+    saveUnitsServer,
   } = useSiteAssets();
 
   const [activeTab, setActiveTab] = useState<'images' | 'units' | 'security'>('images');
@@ -128,14 +129,14 @@ export const AdminImageTerminalModal: React.FC<AdminImageTerminalModalProps> = (
     showToast(`URL aplicada com sucesso para "${key}"!`);
   };
 
-  const handlePasswordChangeSubmit = (e: React.FormEvent) => {
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwdMsg(null);
     if (newPwd !== confirmPwd) {
       setPwdMsg({ success: false, text: 'A nova senha e a confirmação não coincidem.' });
       return;
     }
-    const res = changePassword(currentPwd, newPwd);
+    const res = await changePassword(currentPwd, newPwd);
     setPwdMsg({ success: res.success, text: res.message });
     if (res.success) {
       setCurrentPwd('');
@@ -144,9 +145,10 @@ export const AdminImageTerminalModal: React.FC<AdminImageTerminalModalProps> = (
     }
   };
 
-  const handleUnitsSaveSubmit = (e: React.FormEvent) => {
+  const handleUnitsSaveSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     onSaveUnits(editedUnits);
+    await saveUnitsServer(editedUnits);
     setUnitsSaved(true);
     setTimeout(() => setUnitsSaved(false), 3000);
   };

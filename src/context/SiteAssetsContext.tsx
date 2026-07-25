@@ -1,11 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ASSETS } from '../data/primeRodasData';
-import {
-  saveAssetToDB,
-  getAllAssetsFromDB,
-  removeAssetFromDB,
-  clearAllAssetsFromDB,
-} from '../lib/dbStorage';
+import { UnitInfo } from '../types';
 
 export type AssetKey =
   | 'storefront'
@@ -84,11 +79,6 @@ export const ASSETS_CATALOG: AssetInfo[] = [
   },
 ];
 
-interface MasterCredentials {
-  username: string;
-  passwordHash: string;
-}
-
 interface SiteAssetsContextType {
   assets: Record<AssetKey, string>;
   updateAsset: (key: AssetKey, newUrl: string) => void;
@@ -99,30 +89,20 @@ interface SiteAssetsContextType {
   isRegistered: boolean;
   isLoggedIn: boolean;
   masterUsername: string | null;
-  registerMasterUser: (username: string, password: string) => boolean;
-  loginAdmin: (username: string, password: string) => boolean;
+  registerMasterUser: (username: string, password: string) => Promise<boolean>;
+  loginAdmin: (username: string, password: string) => Promise<boolean>;
   logoutAdmin: () => void;
-  changePassword: (oldPassword: string, newPassword: string) => { success: boolean; message: string };
+  changePassword: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+  saveUnitsServer: (units: UnitInfo[]) => Promise<boolean>;
+  serverUnits: UnitInfo[] | null;
 }
 
-const STORAGE_ASSETS_KEY = 'prime_rodas_custom_assets_v1';
-const STORAGE_MASTER_KEY = 'prime_rodas_master_auth_v1';
-
-// Basic string hashing for simple storage comparison
-function hashPassword(pwd: string): string {
-  let hash = 0;
-  for (let i = 0; i < pwd.length; i++) {
-    const char = pwd.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  return 'ph_' + Math.abs(hash).toString(36) + '_' + pwd.length;
-}
+const STORAGE_ASSETS_KEY = 'prime_rodas_custom_assets_v2';
 
 const SiteAssetsContext = createContext<SiteAssetsContextType | undefined>(undefined);
 
 export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load custom assets from localStorage and IndexedDB
+  // Local state initialized with defaults/cached
   const [customAssets, setCustomAssets] = useState<Record<string, string>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_ASSETS_KEY);
@@ -132,30 +112,48 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   });
 
-  // Sync with IndexedDB on mount for reliable mobile persistence
-  useEffect(() => {
-    getAllAssetsFromDB().then((dbAssets) => {
-      if (dbAssets && Object.keys(dbAssets).length > 0) {
-        setCustomAssets((prev) => ({ ...dbAssets, ...prev }));
-      }
-    });
-  }, []);
-
-  // Load master user credentials
-  const [masterCreds, setMasterCreds] = useState<MasterCredentials | null>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_MASTER_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const [masterUsername, setMasterUsername] = useState<string | null>(null);
+  const [serverUnits, setServerUnits] = useState<UnitInfo[] | null>(null);
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return sessionStorage.getItem('prime_rodas_admin_session') === 'true';
   });
 
-  // Calculate current active assets
+  // Load global site data from server backend on mount
+  useEffect(() => {
+    const fetchSiteData = async () => {
+      try {
+        const res = await fetch('/api/site-data');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.assets && Object.keys(data.assets).length > 0) {
+            setCustomAssets(data.assets);
+            try {
+              localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(data.assets));
+            } catch (e) {
+              console.warn('LocalStorage save warning:', e);
+            }
+          }
+          if (data.isRegistered !== undefined) {
+            setIsRegistered(data.isRegistered);
+          }
+          if (data.masterUsername) {
+            setMasterUsername(data.masterUsername);
+          }
+          if (data.units) {
+            setServerUnits(data.units);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch site-data from server backend:', err);
+      }
+    };
+
+    fetchSiteData();
+  }, []);
+
+  // Compute active assets with fallbacks to defaults
   const assets: Record<AssetKey, string> = {
     storefront: customAssets.storefront || ASSETS.storefront,
     logo: customAssets.logo || ASSETS.logo,
@@ -170,63 +168,90 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const updateAsset = (key: AssetKey, newUrl: string) => {
     const updated = { ...customAssets, [key]: newUrl };
     setCustomAssets(updated);
-    saveAssetToDB(key, newUrl);
+
     try {
       localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(updated));
     } catch (e) {
-      console.warn('LocalStorage quota warning, using IndexedDB fallback:', e);
+      console.warn('LocalStorage save warning:', e);
     }
+
+    // Persist globally on server for ALL visitors
+    fetch('/api/update-asset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, newUrl }),
+    }).catch((err) => console.error('Failed to sync asset update to server:', err));
   };
 
   const resetAsset = (key: AssetKey) => {
     const updated = { ...customAssets };
     delete updated[key];
     setCustomAssets(updated);
-    removeAssetFromDB(key);
+
     try {
       localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(updated));
     } catch (e) {
-      console.warn('LocalStorage save warning:', e);
+      console.warn('LocalStorage reset warning:', e);
     }
+
+    fetch('/api/reset-asset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    }).catch((err) => console.error('Failed to reset asset on server:', err));
   };
 
   const resetAllAssets = () => {
     setCustomAssets({});
-    clearAllAssetsFromDB();
     try {
       localStorage.removeItem(STORAGE_ASSETS_KEY);
     } catch (e) {
-      console.warn('LocalStorage remove warning:', e);
+      console.warn('LocalStorage clear warning:', e);
     }
+
+    fetch('/api/reset-all-assets', {
+      method: 'POST',
+    }).catch((err) => console.error('Failed to reset all assets on server:', err));
   };
 
-  const registerMasterUser = (username: string, password: string): boolean => {
+  const registerMasterUser = async (username: string, password: string): Promise<boolean> => {
     if (!username.trim() || !password.trim()) return false;
-    const creds: MasterCredentials = {
-      username: username.trim(),
-      passwordHash: hashPassword(password),
-    };
     try {
-      localStorage.setItem(STORAGE_MASTER_KEY, JSON.stringify(creds));
-      setMasterCreds(creds);
-      setIsLoggedIn(true);
-      sessionStorage.setItem('prime_rodas_admin_session', 'true');
-      return true;
-    } catch {
-      return false;
+      const res = await fetch('/api/register-master', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsRegistered(true);
+        setMasterUsername(username.trim());
+        setIsLoggedIn(true);
+        sessionStorage.setItem('prime_rodas_admin_session', 'true');
+        return true;
+      }
+    } catch (e) {
+      console.error('Error registering master user:', e);
     }
+    return false;
   };
 
-  const loginAdmin = (username: string, password: string): boolean => {
-    if (!masterCreds) return false;
-    const inputHash = hashPassword(password);
-    if (
-      username.trim().toLowerCase() === masterCreds.username.toLowerCase() &&
-      inputHash === masterCreds.passwordHash
-    ) {
-      setIsLoggedIn(true);
-      sessionStorage.setItem('prime_rodas_admin_session', 'true');
-      return true;
+  const loginAdmin = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/login-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsLoggedIn(true);
+        setMasterUsername(data.masterUsername || username.trim());
+        sessionStorage.setItem('prime_rodas_admin_session', 'true');
+        return true;
+      }
+    } catch (e) {
+      console.error('Error logging in admin:', e);
     }
     return false;
   };
@@ -236,22 +261,36 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     sessionStorage.removeItem('prime_rodas_admin_session');
   };
 
-  const changePassword = (oldPassword: string, newPassword: string) => {
-    if (!masterCreds) return { success: false, message: 'Usuário master não encontrado.' };
-    if (hashPassword(oldPassword) !== masterCreds.passwordHash) {
-      return { success: false, message: 'Senha atual incorreta.' };
-    }
-    if (newPassword.length < 4) {
-      return { success: false, message: 'A nova senha deve ter no mínimo 4 caracteres.' };
-    }
-    const updatedCreds = { ...masterCreds, passwordHash: hashPassword(newPassword) };
+  const changePassword = async (oldPassword: string, newPassword: string) => {
     try {
-      localStorage.setItem(STORAGE_MASTER_KEY, JSON.stringify(updatedCreds));
-      setMasterCreds(updatedCreds);
-      return { success: true, message: 'Senha alterada com sucesso!' };
-    } catch {
-      return { success: false, message: 'Erro ao salvar nova senha no dispositivo.' };
+      const res = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+      const data = await res.json();
+      return { success: data.success, message: data.message };
+    } catch (e) {
+      return { success: false, message: 'Erro ao conectar ao servidor para alterar a senha.' };
     }
+  };
+
+  const saveUnitsServer = async (units: UnitInfo[]): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/update-units', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ units }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setServerUnits(units);
+        return true;
+      }
+    } catch (e) {
+      console.error('Error saving units to server:', e);
+    }
+    return false;
   };
 
   return (
@@ -261,13 +300,15 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         updateAsset,
         resetAsset,
         resetAllAssets,
-        isRegistered: !!masterCreds,
+        isRegistered,
         isLoggedIn,
-        masterUsername: masterCreds ? masterCreds.username : null,
+        masterUsername,
         registerMasterUser,
         loginAdmin,
         logoutAdmin,
         changePassword,
+        saveUnitsServer,
+        serverUnits,
       }}
     >
       {children}

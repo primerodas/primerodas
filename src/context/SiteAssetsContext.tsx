@@ -25,7 +25,7 @@ export const ASSETS_CATALOG: AssetInfo[] = [
     label: 'Fachada da Loja (Hero)',
     category: 'Página Inicial',
     description: 'Imagem principal da loja exibida no destaque inicial do site.',
-    defaultUrl: '/images/fachada-prime-rodas.png',
+    defaultUrl: ASSETS.storefront,
   },
   {
     key: 'mascot',
@@ -142,7 +142,7 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Calculate current active assets
   const assets: Record<AssetKey, string> = {
-    storefront: customAssets.storefront || '/images/fachada-prime-rodas.png',
+    storefront: customAssets.storefront || ASSETS.storefront,
     logo: customAssets.logo || ASSETS.logo,
     mascot: customAssets.mascot || ASSETS.mascot,
     metallicWheel: customAssets.metallicWheel || ASSETS.metallicWheel,

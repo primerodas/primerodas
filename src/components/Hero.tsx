@@ -79,13 +79,13 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
 
           </div>
 
-          {/* Column Right: Mascot & Glass Composition */}
+          {/* Column Right: Storefront Photo & Glass Composition */}
           <div className="lg:col-span-5 relative flex justify-center lg:justify-end h-full">
             
-            <div className="relative w-full max-w-[450px] min-h-[460px] sm:min-h-[540px] flex items-end justify-center">
+            <div className="relative w-full max-w-[480px] flex items-center justify-center">
               
-              {/* Glass Backdrop Panel */}
-              <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 w-72 sm:w-80 h-[480px] sm:h-[540px] bg-white/[0.03] backdrop-blur-[24px] border border-white/10 rounded-[40px] -z-10 shadow-2xl" />
+              {/* Glass Backdrop Glow */}
+              <div className="absolute inset-0 bg-[#E30613]/10 rounded-[32px] blur-2xl -z-10" />
               
               {/* Background Asterisk Symbol */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[260px] sm:text-[320px] text-white/5 font-bold select-none pointer-events-none -z-20">
@@ -93,17 +93,17 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
               </div>
 
               {/* Floating Glass Card - Top Left */}
-              <div className="hidden sm:block absolute top-10 left-0 bg-white/5 backdrop-blur-lg border border-white/10 p-4 rounded-2xl w-52 shadow-2xl z-20">
+              <div className="hidden sm:block absolute -top-4 -left-6 bg-[#0a0a0a]/90 backdrop-blur-lg border border-white/12 p-3.5 rounded-2xl w-48 shadow-2xl z-20">
                 <div className="text-[10px] font-bold text-[#E30613] mb-1 tracking-widest uppercase">
-                  ATENDIMENTO PERSONALIZADO
+                  NOSSA ESTRUTURA
                 </div>
                 <div className="text-[10px] text-[#B7B7B7] leading-tight">
-                  Converse com nossa equipe e encontre a melhor solução para seu veículo.
+                  Loja moderna com showroom completo de rodas e pneus.
                 </div>
               </div>
 
               {/* Floating Glass Card - Bottom Right */}
-              <div className="hidden sm:block absolute bottom-20 -right-4 bg-white/5 backdrop-blur-lg border border-white/10 p-4 rounded-2xl shadow-2xl z-20">
+              <div className="hidden sm:block absolute -bottom-4 -right-4 bg-[#0a0a0a]/90 backdrop-blur-lg border border-white/12 px-4 py-3 rounded-2xl shadow-2xl z-20">
                 <div className="flex items-center gap-2.5 text-[10px] font-bold tracking-widest text-white">
                   <span>RODAS</span>
                   <span className="text-[#E30613] text-sm">*</span>
@@ -113,14 +113,24 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
                 </div>
               </div>
 
-              {/* Official Mascot Graphic */}
-              <div className="relative z-10 w-full flex items-end justify-center h-full max-h-[480px]">
+              {/* Storefront Image Container */}
+              <div className="relative z-10 w-full overflow-hidden rounded-[28px] border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.85)] group">
                 <img
-                  src={ASSETS.mascot}
-                  alt="Mascote Prime Rodas"
-                  className="w-auto h-full max-h-[440px] sm:max-h-[500px] object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)] transition-transform duration-500 hover:scale-[1.02]"
+                  src={ASSETS.storefront}
+                  alt="Fachada e Loja Prime Rodas"
+                  className="w-full h-[360px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
                   referrerPolicy="no-referrer"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-xs text-white/90 font-medium">
+                  <span className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[11px]">
+                    primerodas.com.br
+                  </span>
+                  <span className="bg-[#E30613] text-white px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                    Loja Física
+                  </span>
+                </div>
               </div>
 
             </div>

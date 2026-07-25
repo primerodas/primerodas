@@ -1,8 +1,10 @@
 import React from 'react';
-import { ASSETS } from '../data/primeRodasData';
+import { useSiteAssets } from '../context/SiteAssetsContext';
 import { Disc, UserCheck, Car, MapPin } from 'lucide-react';
 
 export const About: React.FC = () => {
+  const { assets } = useSiteAssets();
+
   const highlights = [
     {
       title: 'Especialistas em rodas',
@@ -63,7 +65,7 @@ export const About: React.FC = () => {
               
               <div className="relative w-full h-full rounded-[28px] overflow-hidden">
                 <img
-                  src={ASSETS.metallicWheel}
+                  src={assets.metallicWheel}
                   alt="Acabamento metálico em rodas de liga leve"
                   loading="lazy"
                   decoding="async"

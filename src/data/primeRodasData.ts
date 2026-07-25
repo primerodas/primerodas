@@ -2,7 +2,7 @@ import { UnitInfo, ServiceItem, FaqItem, InstagramPost } from '../types';
 
 import logoImg from '../assets/images/prime_rodas_logo.svg';
 import mascotImg from '../assets/images/mascot_logo_chest_1784936863841.jpg';
-import storefrontImg from '../assets/images/primerodas_storefront_1784937618243.jpg';
+import storefrontImg from '../assets/images/fachada-prime-rodas.png';
 import metallicWheelImg from '../assets/images/wheel_metallic_bg_1784935310642.jpg';
 import beforeWheelImg from '../assets/images/wheel_before_restoration_1784935321072.jpg';
 import afterWheelImg from '../assets/images/wheel_after_restoration_1784935331015.jpg';

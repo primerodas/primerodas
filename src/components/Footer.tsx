@@ -2,13 +2,15 @@ import React from 'react';
 import { ASSETS } from '../data/primeRodasData';
 import { BrandAsterisk } from './BrandAsterisk';
 import { PrimeRodasLogo } from './PrimeRodasLogo';
+import { Lock } from 'lucide-react';
 
 interface FooterProps {
   onOpenPrivacy: () => void;
   onOpenTerms: () => void;
+  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenTerms }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenTerms, onOpenAdmin }) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -101,6 +103,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenTerms }) =>
               className="hover:text-gray-300 transition-colors cursor-pointer"
             >
               Termos de Uso
+            </button>
+            <button
+              onClick={onOpenAdmin}
+              className="hover:text-gray-300 text-gray-600 transition-colors cursor-pointer flex items-center gap-1 opacity-60 hover:opacity-100"
+              title="Acesso Administrativo Master"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Área Restrita</span>
             </button>
           </div>
         </div>

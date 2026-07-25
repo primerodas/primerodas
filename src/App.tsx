@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { INITIAL_UNITS } from './data/primeRodasData';
 import { UnitInfo } from './types';
+import { SiteAssetsProvider, useSiteAssets } from './context/SiteAssetsContext';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ServicesTicker } from './components/ServicesTicker';
@@ -20,21 +21,35 @@ import { SocialSection } from './components/SocialSection';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
 import { FloatingControls } from './components/FloatingControls';
-import { AdminPanelDrawer } from './components/AdminPanelDrawer';
 import { LegalModal } from './components/LegalModal';
+import { AdminAuthModal } from './components/AdminAuthModal';
+import { AdminImageTerminalModal } from './components/AdminImageTerminalModal';
 
-export default function App() {
+function MainApp() {
   const [units, setUnits] = useState<UnitInfo[]>(INITIAL_UNITS);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [legalType, setLegalType] = useState<'privacy' | 'terms' | null>(null);
   
+  // Modals state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isTerminalModalOpen, setIsTerminalModalOpen] = useState(false);
+
   const [prefilledService, setPrefilledService] = useState('Recuperação de rodas');
   const [prefilledUnitId, setPrefilledUnitId] = useState('mor-gouveia');
 
-  // Check if there are unconfirmed fields in units
-  const hasPendingFields = units.some(
-    (u) => !u.address || u.phone.includes('CONFIRMAR')
-  );
+  const { isLoggedIn } = useSiteAssets();
+
+  const handleOpenAdminFlow = () => {
+    if (isLoggedIn) {
+      setIsTerminalModalOpen(true);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
+    setIsTerminalModalOpen(true);
+  };
 
   const handleSelectServiceWhatsApp = (serviceTitle: string) => {
     setPrefilledService(serviceTitle);
@@ -65,8 +80,8 @@ export default function App() {
       {/* Fixed Header */}
       <Header
         onOpenWhatsAppModal={handleOpenWhatsAppGeneral}
-        onOpenAdminPanel={() => setIsAdminOpen(true)}
-        hasPendingFields={hasPendingFields}
+        onOpenAdminPanel={handleOpenAdminFlow}
+        hasPendingFields={false}
       />
 
       {/* Main Page Content */}
@@ -118,19 +133,27 @@ export default function App() {
         <FaqSection />
       </main>
 
-      {/* Footer */}
+      {/* Footer with Discrete Admin Link */}
       <Footer
         onOpenPrivacy={() => setLegalType('privacy')}
         onOpenTerms={() => setLegalType('terms')}
+        onOpenAdmin={handleOpenAdminFlow}
       />
 
       {/* Floating Buttons Group */}
       <FloatingControls units={units} />
 
-      {/* Admin Panel Drawer for Pending Fields */}
-      <AdminPanelDrawer
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
+      {/* Admin Auth Modal (Master Setup or Login) */}
+      <AdminAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccessLogin={handleAuthSuccess}
+      />
+
+      {/* Terminal / Painel de Gerenciamento de Fotos */}
+      <AdminImageTerminalModal
+        isOpen={isTerminalModalOpen}
+        onClose={() => setIsTerminalModalOpen(false)}
         units={units}
         onSaveUnits={(updated) => setUnits(updated)}
       />
@@ -142,5 +165,13 @@ export default function App() {
       />
 
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <SiteAssetsProvider>
+      <MainApp />
+    </SiteAssetsProvider>
   );
 }

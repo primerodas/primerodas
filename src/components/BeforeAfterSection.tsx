@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { ASSETS } from '../data/primeRodasData';
+import { useSiteAssets } from '../context/SiteAssetsContext';
 import { BrandAsterisk } from './BrandAsterisk';
 import { SlidersHorizontal, Info } from 'lucide-react';
 
 export const BeforeAfterSection: React.FC = () => {
+  const { assets } = useSiteAssets();
   const [sliderPos, setSliderPos] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,7 +83,7 @@ export const BeforeAfterSection: React.FC = () => {
           >
             {/* After Image (Full Base) */}
             <img
-              src={ASSETS.afterWheel}
+              src={assets.afterWheel}
               alt="Roda Restaurada - Depois"
               loading="lazy"
               decoding="async"
@@ -99,7 +100,7 @@ export const BeforeAfterSection: React.FC = () => {
               style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
             >
               <img
-                src={ASSETS.beforeWheel}
+                src={assets.beforeWheel}
                 alt="Roda Danificada - Antes"
                 loading="lazy"
                 decoding="async"

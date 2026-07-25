@@ -1,12 +1,14 @@
 import React from 'react';
 import { MessageCircle, ArrowRight, ChevronDown } from 'lucide-react';
-import { ASSETS } from '../data/primeRodasData';
+import { useSiteAssets } from '../context/SiteAssetsContext';
 
 interface HeroProps {
   onOpenConsultantModal: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
+  const { assets } = useSiteAssets();
+
   return (
     <section id="hero" className="relative min-h-[92vh] pt-32 pb-20 flex flex-col justify-between overflow-hidden bg-[#050505] text-white">
       
@@ -116,8 +118,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
               {/* Storefront Image Container */}
               <div className="relative z-10 w-full overflow-hidden rounded-[28px] border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.85)] group">
                 <img
-                  src={ASSETS.storefront}
-                  alt="Fachada e Loja Prime Rodas"
+                  src={assets.storefront}
+                  alt="Fachada da Prime Rodas"
                   decoding="async"
                   className="w-full h-[280px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
                   referrerPolicy="no-referrer"

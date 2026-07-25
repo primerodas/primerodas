@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "site_config": {
+      "title": "Site Config",
+      "description": "Global store for site assets, admin credentials, and store units",
+      "properties": {
+        "assets": {
+          "type": "object",
+          "description": "Custom asset URLs mapped by asset key"
+        },
+        "masterUser": {
+          "type": "object",
+          "description": "Master admin credential hash"
+        },
+        "units": {
+          "type": "array",
+          "description": "Store units list"
+        }
+      }
+    }
+  }
+}

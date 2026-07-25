@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ASSETS } from '../data/primeRodasData';
 import { UnitInfo } from '../types';
+import {
+  subscribeToSiteConfig,
+  updateSiteAssetInFirebase,
+  resetSiteAssetInFirebase,
+  resetAllSiteAssetsInFirebase,
+} from '../lib/firebase';
 
 export type AssetKey =
   | 'storefront'
@@ -120,20 +126,35 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return sessionStorage.getItem('prime_rodas_admin_session') === 'true';
   });
 
-  // Load global site data from server backend on mount
+  // Subscribe to real-time Firestore updates & fetch initial data from server
   useEffect(() => {
+    // 1. Subscribe to Firestore database for real-time changes across all browsers
+    const unsubscribe = subscribeToSiteConfig((data) => {
+      if (data.assets) {
+        setCustomAssets(data.assets);
+        try {
+          localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(data.assets));
+        } catch (e) {
+          console.warn('LocalStorage sync warning:', e);
+        }
+      }
+      if (data.masterUser) {
+        setIsRegistered(true);
+        setMasterUsername(data.masterUser.username);
+      }
+      if (data.units) {
+        setServerUnits(data.units);
+      }
+    });
+
+    // 2. Initial fetch from server API
     const fetchSiteData = async () => {
       try {
         const res = await fetch('/api/site-data');
         if (res.ok) {
           const data = await res.json();
           if (data.assets && Object.keys(data.assets).length > 0) {
-            setCustomAssets(data.assets);
-            try {
-              localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(data.assets));
-            } catch (e) {
-              console.warn('LocalStorage save warning:', e);
-            }
+            setCustomAssets((prev) => ({ ...prev, ...data.assets }));
           }
           if (data.isRegistered !== undefined) {
             setIsRegistered(data.isRegistered);
@@ -151,6 +172,10 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
     fetchSiteData();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // Compute active assets with fallbacks to defaults
@@ -175,7 +200,10 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       console.warn('LocalStorage save warning:', e);
     }
 
-    // Persist globally on server for ALL visitors
+    // Persist to Firestore database
+    updateSiteAssetInFirebase(key, newUrl);
+
+    // Also persist to server endpoint for redundancy
     fetch('/api/update-asset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -194,6 +222,8 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       console.warn('LocalStorage reset warning:', e);
     }
 
+    resetSiteAssetInFirebase(key);
+
     fetch('/api/reset-asset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -208,6 +238,8 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     } catch (e) {
       console.warn('LocalStorage clear warning:', e);
     }
+
+    resetAllSiteAssetsInFirebase();
 
     fetch('/api/reset-all-assets', {
       method: 'POST',

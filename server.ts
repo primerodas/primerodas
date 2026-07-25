@@ -109,23 +109,35 @@ app.post('/api/register-master', (req, res) => {
 
 // 3. Login Admin
 app.post('/api/login-admin', (req, res) => {
-  if (!currentStore.masterUser) {
-    return res.status(400).json({ success: false, message: 'Nenhum usuário master cadastrado ainda.' });
-  }
-
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'Preencha usuário e senha.' });
   }
 
-  const isUserMatch = username.trim().toLowerCase() === currentStore.masterUser.username.toLowerCase();
-  const isPassMatch = hashPassword(password) === currentStore.masterUser.passwordHash;
+  const cleanUser = username.trim().toLowerCase();
 
-  if (isUserMatch && isPassMatch) {
-    res.json({ success: true, masterUsername: currentStore.masterUser.username });
-  } else {
-    res.status(401).json({ success: false, message: 'Usuário ou senha incorretos.' });
+  // Primary check: admin / admin@123 or store credentials
+  const isAdminDefault = cleanUser === 'admin' && password === 'admin@123';
+  const isStoreMatch =
+    currentStore.masterUser &&
+    cleanUser === currentStore.masterUser.username.toLowerCase() &&
+    hashPassword(password) === currentStore.masterUser.passwordHash;
+
+  if (isAdminDefault || isStoreMatch) {
+    if (isAdminDefault && (!currentStore.masterUser || currentStore.masterUser.username.toLowerCase() !== 'admin')) {
+      currentStore.masterUser = {
+        username: 'admin',
+        passwordHash: hashPassword('admin@123'),
+      };
+      saveStore(currentStore);
+    }
+    return res.json({
+      success: true,
+      masterUsername: currentStore.masterUser ? currentStore.masterUser.username : 'admin',
+    });
   }
+
+  res.status(401).json({ success: false, message: 'Usuário ou senha incorretos.' });
 });
 
 // 4. Update asset (Global photo upload for everyone)

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { ASSETS } from '../data/primeRodasData';
 import { useSiteAssets } from '../context/SiteAssetsContext';
 import { BrandAsterisk } from './BrandAsterisk';
 import { SlidersHorizontal, Info } from 'lucide-react';
@@ -88,7 +89,9 @@ export const BeforeAfterSection: React.FC = () => {
               loading="lazy"
               decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
-              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = ASSETS.afterWheel;
+              }}
             />
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-[#151515]/90 border border-white/10 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-white tracking-wider z-10">
               DEPOIS (Restauração)
@@ -105,7 +108,9 @@ export const BeforeAfterSection: React.FC = () => {
                 loading="lazy"
                 decoding="async"
                 className="absolute inset-0 w-full h-full object-cover"
-                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = ASSETS.beforeWheel;
+                }}
               />
               <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-black/90 border border-white/10 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-[#E30613] tracking-wider z-10">
                 ANTES (Danificada)

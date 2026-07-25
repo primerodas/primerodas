@@ -63,7 +63,7 @@ export const AdminImageTerminalModal: React.FC<AdminImageTerminalModalProps> = (
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  // Helper to read & compress image to base64 safely for localStorage
+  // Helper to read & compress image to base64 safely for mobile & desktop persistence
   const handleFileUpload = (key: AssetKey, file: File) => {
     if (!file) return;
 
@@ -72,13 +72,15 @@ export const AdminImageTerminalModal: React.FC<AdminImageTerminalModalProps> = (
       const result = e.target?.result as string;
       if (!result) return;
 
-      // Image canvas compression helper
+      // Image canvas compression helper for mobile camera photos
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       img.src = result;
+
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
+        const MAX_WIDTH = 1000;
+        const MAX_HEIGHT = 1000;
         let width = img.width;
         let height = img.height;
 
@@ -99,15 +101,18 @@ export const AdminImageTerminalModal: React.FC<AdminImageTerminalModalProps> = (
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          // Compress to lightweight 0.78 quality JPEG (~100KB), perfect for mobile 4G/5G
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.78);
           updateAsset(key, compressedDataUrl);
-          showToast(`Imagem "${key}" atualizada via upload com sucesso!`);
+          showToast(`Imagem "${key}" atualizada e otimizada com sucesso!`);
         } else {
           updateAsset(key, result);
           showToast(`Imagem "${key}" atualizada com sucesso!`);
         }
       };
+
       img.onerror = () => {
+        // Fallback to raw base64 if canvas drawing is unavailable
         updateAsset(key, result);
         showToast(`Imagem "${key}" atualizada com sucesso!`);
       };

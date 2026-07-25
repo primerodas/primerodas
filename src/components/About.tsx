@@ -1,4 +1,5 @@
 import React from 'react';
+import { ASSETS } from '../data/primeRodasData';
 import { useSiteAssets } from '../context/SiteAssetsContext';
 import { Disc, UserCheck, Car, MapPin } from 'lucide-react';
 
@@ -70,7 +71,9 @@ export const About: React.FC = () => {
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover object-center filter brightness-95 group-hover:scale-105 transition-transform duration-700"
-                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = ASSETS.metallicWheel;
+                  }}
                 />
 
                 {/* Overlays */}

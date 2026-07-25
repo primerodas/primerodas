@@ -1,5 +1,6 @@
 import React from 'react';
 import { MessageCircle, ArrowRight, ChevronDown } from 'lucide-react';
+import { ASSETS } from '../data/primeRodasData';
 import { useSiteAssets } from '../context/SiteAssetsContext';
 
 interface HeroProps {
@@ -122,7 +123,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenConsultantModal }) => {
                   alt="Fachada da Prime Rodas"
                   decoding="async"
                   className="w-full h-[280px] sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = ASSETS.storefront;
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
                 

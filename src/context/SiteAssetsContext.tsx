@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ASSETS } from '../data/primeRodasData';
+import {
+  saveAssetToDB,
+  getAllAssetsFromDB,
+  removeAssetFromDB,
+  clearAllAssetsFromDB,
+} from '../lib/dbStorage';
 
 export type AssetKey =
   | 'storefront'
@@ -116,7 +122,7 @@ function hashPassword(pwd: string): string {
 const SiteAssetsContext = createContext<SiteAssetsContextType | undefined>(undefined);
 
 export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load custom assets from localStorage
+  // Load custom assets from localStorage and IndexedDB
   const [customAssets, setCustomAssets] = useState<Record<string, string>>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_ASSETS_KEY);
@@ -125,6 +131,15 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return {};
     }
   });
+
+  // Sync with IndexedDB on mount for reliable mobile persistence
+  useEffect(() => {
+    getAllAssetsFromDB().then((dbAssets) => {
+      if (dbAssets && Object.keys(dbAssets).length > 0) {
+        setCustomAssets((prev) => ({ ...dbAssets, ...prev }));
+      }
+    });
+  }, []);
 
   // Load master user credentials
   const [masterCreds, setMasterCreds] = useState<MasterCredentials | null>(() => {
@@ -155,10 +170,11 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const updateAsset = (key: AssetKey, newUrl: string) => {
     const updated = { ...customAssets, [key]: newUrl };
     setCustomAssets(updated);
+    saveAssetToDB(key, newUrl);
     try {
       localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(updated));
     } catch (e) {
-      console.warn('LocalStorage save warning:', e);
+      console.warn('LocalStorage quota warning, using IndexedDB fallback:', e);
     }
   };
 
@@ -166,6 +182,7 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const updated = { ...customAssets };
     delete updated[key];
     setCustomAssets(updated);
+    removeAssetFromDB(key);
     try {
       localStorage.setItem(STORAGE_ASSETS_KEY, JSON.stringify(updated));
     } catch (e) {
@@ -175,6 +192,7 @@ export const SiteAssetsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const resetAllAssets = () => {
     setCustomAssets({});
+    clearAllAssetsFromDB();
     try {
       localStorage.removeItem(STORAGE_ASSETS_KEY);
     } catch (e) {
